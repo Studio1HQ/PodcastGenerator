@@ -1,59 +1,85 @@
-# Web Scraper
+# Article to Podcast Generator
 
-A serverless web crawler that scrapes websites up to N levels deep using Chrome in headless mode, producing a dictionary of links and their content. If the links are PDFs or other binaries, they are converted into base64 bytes. 
+This project demonstrates a simple end-to-end pipeline that converts an online article into a short podcast. It uses Tensorlake for web scraping and data preparation, Gemini for summarization, and ElevenLabs for text-to-speech.
 
-Once deployed, the scraper will be available as an HTTP API that you can integrate into any application.
+---
 
-## Local Development
+## Project Overview
 
-```bash
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
+The workflow follows these key phases:
 
-# Install dependencies
-pip install -r requirements.txt
+1. **Web Scraping and Data Preparation**  
+   A Tensorlake application crawls the given article URL, fetches the page content, and extracts clean, readable text.
+
+2. **Summarization**  
+   The cleaned text is summarized into a podcast-style script using Gemini.
+
+3. **Audio Generation**  
+   The generated script is converted into audio using ElevenLabs text-to-speech.
+
+4. **User Interface**  
+   A Streamlit app ties everything together and allows the entire flow to be run from a browser.
+
+---
+
+## Project Structure
+
+- `main.py`  
+  Defines the Tensorlake web scraper and clean text extraction logic.
+
+- `summarize.py`  
+  Uses Gemini to generate a podcast-style summary from the cleaned text.
+
+- `audio.py`  
+  Converts the generated podcast script into audio using ElevenLabs.
+
+- `app.py`  
+  Streamlit application that runs the full pipeline from URL input to audio output.
+
+- `.env`  
+  Stores API keys for Gemini and ElevenLabs.
+
+---
+
+## Prerequisites
+
+- Python 3.10 or later
+- Virtual environment (recommended)
+- API keys for:
+  - Gemini
+  - ElevenLabs
+
+---
+
+## Setup
+
+1. Create and activate a virtual environment:
+```
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+```
+2. Install dependencies
+```
+pip install tensorlake streamlit python-dotenv requests google-genai
+```
+Or you can also use `pip install -r requirements.txt.`
+
+3. Create a .env file in the project root
+```
+GEMINI_API_KEY=your_gemini_api_key
+ELEVENLABS_API_KEY=your_elevenlabs_api_key
 ```
 
-## Test Locally
+## Running the Project
 
-```bash
-# Run with Tensorlake's local runner
-python main.py
+Run the Streamlit App
+
+```
+streamlit run app.py
 ```
 
-Or test the crawler directly:
-
-```bash
-python -c "
-from main import crawl
-print(crawl({'url': 'https://example.com', 'max_depth': 2, 'max_links': 5}))
-"
-```
-
-## Deploy to Tensorlake
-
-```bash
-# Login to Tensorlake
-tensorlake login
-# or set an API Key of your Tensorlake Project
-export TENSORLAKE_API_KEY=tl_xxx
-
-# Deploy
-tensorlake deploy main.py
-```
-
-## Test with curl
-
-Once deployed, test via the Tensorlake API:
-
-```bash
-curl -X POST https://api.tensorlake.ai/applications/crawl \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TENSORLAKE_API_KEY" \
-  -d '{"url": "https://example.com", "max_depth": 2, "max_links": 10}'
-```
-
-## How It Works
-
-The crawler uses PyDoll headless browser to render JavaScript content, then recursively follows links using depth-first search. Binary files (images, PDFs) are automatically base64 encoded. Each page fetch includes automatic retries and timeout handling.
+From the UI:
+- Enter an article URL.
+- Provide your Gemini and ElevenLabs API keys.
+- Click Generate Podcast.
+- View the generated script and listen to the podcast audio.
